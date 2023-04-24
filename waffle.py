@@ -15,13 +15,13 @@ import faiss
 import numpy as np
 from gensim.models import KeyedVectors
 vectors = KeyedVectors.load(
-    '/work/IGC_2021_lemmatized__350__13__9__5__0_05__1_vectors.kv')
+    './word2vec-isl/IGC_2021_lemmatized__350__13__9__5__0_05__1_vectors.kv')
 
 xb = vectors.get_normed_vectors()
 xb.shape
 
 
-xq = vectors.get_vector('reiður', norm=True)
+xq = vectors.get_vector('fiskur', norm=True)
 xq = np.reshape(xq, (1, -1)).astype('float32')
 
 xq.shape
@@ -38,8 +38,10 @@ index = faiss.IndexIVFFlat(quantizer, d, nlist)
 index.train(xb)  # we must train the index to cluster into cells
 
 # total words: 969714
-# stable at: 484857 or 969714 / 2
-index.add(xb[:484857])
+# last stable at: 484857 or 0.5*969714
+percent_of_total = 1*969_714
+
+index.add(xb[:percent_of_total])
 
 
 index.nprobe = 8  # set how many of nearest cells to search
@@ -47,9 +49,13 @@ D, I = index.search(xq, k)
 
 
 # display results
-for _ in I:
-    for i in _:
-        if i > 0:
-            results = vectors.most_similar(positive=[vectors[i]], topn=1)
-            result_word = results[0]
-            print(result_word)
+
+for i in range(len(I[0])):
+    distance = D[0][i]  # small means most relevant
+    word_index = I[0][i]
+    try:
+        results = vectors.most_similar(positive=[vectors[word_index]], topn=1)
+        result_word = results[0][0]
+        print(f"result: {result_word} \ndistance: {distance} \n")
+    except:
+        print("something went wrong")
