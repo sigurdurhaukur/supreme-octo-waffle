@@ -49,7 +49,7 @@ def convert_to_word_embeddings(data):
     for word in data:
         try:
             word_embeddings.append(vectors.get_vector(word, norm=True))
-        except:
+        except KeyError:
             pass
 
     return word_embeddings
