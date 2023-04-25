@@ -14,7 +14,7 @@ download data
 ```bash
  curl --remote-name-all https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/209{/word2vec_models.zip}
 
- unzip /work/word2vec_models.zip
+ unzip -j /work/word2vec_models.zip "IGC_2021_lemmatized__350__13__9__5__0_05__1_vectors.kv" "READ.ME"
 ```
 
 database format:
