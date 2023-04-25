@@ -1,6 +1,10 @@
 import re
 import numpy as np
 
+from gensim.models import KeyedVectors
+vectors = KeyedVectors.load(
+    './word2vec-isl/IGC_2021_lemmatized__350__13__9__5__0_05__1_vectors.kv')
+
 STOP_WORDS_PATH = "./stop-words/function-words.txt"
 STOP_WORDS = set()
 
@@ -55,15 +59,8 @@ to_process = "Sigurður segir að í fyrstu hafi aðeins verið talið að einn 
 processed = preprocess(to_process)
 processed = np.array(processed)
 
+# tokanize
+processed = [vectors.get_vector(word, norm=True) for word in processed]
 
-# pseudo-tokenizer
-d = 350
-n = len(processed)
-processed1 = np.random.rand(n, d).astype('float32')
-processed2 = np.random.rand(n, d).astype('float32')
-processed3 = np.random.rand(n, d).astype('float32')
-
-print(get_mean_vector(processed1))
-print(get_mean_vector(processed2))
-print(get_mean_vector(processed3))
+print(get_mean_vector(processed))
 
