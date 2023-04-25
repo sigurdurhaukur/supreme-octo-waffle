@@ -1,66 +1,97 @@
 import re
 import numpy as np
-
 from gensim.models import KeyedVectors
+
+# load pre-trained word2vec embeddings
 vectors = KeyedVectors.load(
     './word2vec-isl/IGC_2021_lemmatized__350__13__9__5__0_05__1_vectors.kv')
 
 STOP_WORDS_PATH = "./stop-words/function-words.txt"
-STOP_WORDS = set()
 
-def get_stop_words():
-    with open(STOP_WORDS_PATH, "r") as f:
-        for line in f:
-            STOP_WORDS.add(line.strip())
+def load_stop_words(stop_words_path):
+    if stop_words_path == '':
+        raise ValueError("Stop words path is empty, nothing to load.")
+    
+    stop_words = set()
+    try:
+        with open(stop_words_path, "r") as f:
+            for line in f:
+                stop_words.add(line.strip())
+    except:
+        raise ValueError("Stop words file not found.")
 
-def preprocess(data='', cache=None):
+    return stop_words
+
+
+def calculate_mean_vector(embeddings):
     """
-    Preprocess data.
+    calculates mean vectors of data. for similarity search.
+
+    input: np.array data
+    output: mean vector
+    """
+    if embeddings.size < 0:
+        raise ValueError("Embeddings are empty, nothing to calculate mean vector of.")
+    
+    # average of the sum of all the word embeddings
+    sum_vec = np.sum(embeddings, axis=0)
+    return np.mean(sum_vec)
+
+def convert_to_word_embeddings(data):
+    """
+    converts to the word embeddings
+
+    input: list of preprocessed data
+    output: list of word vectors
+    """
+    if not data:
+        raise ValueError("Data is empty, nothing to tokenize.")
+
+    word_embeddings = []
+    for word in data:
+        try:
+            word_embeddings.append(vectors.get_vector(word, norm=True))
+        except:
+            pass
+
+    return word_embeddings
+
+def preprocess(data='', stop_words=None):
+    """
+    Preprocess data. Removes stop words and punctuation. And returns word embeddings.
 
     input: str data
-    output: data stripped of stop words and punctuation
+    output: word embeddings of the data (stripped of stop words and punctuation)
 
     time complexity: O(n)
     """
     if data == '':
         raise ValueError("Data is empty, nothing to preprocess.")
 
-    if cache is not None and data in cache:
-        return cache[data]
-
-    if not STOP_WORDS:
-        get_stop_words()
-
-    data = data.lower().split(" ")
-    data = [re.sub(r'[^\w\s\t\n]','',word) for word in data if word not in STOP_WORDS]
+    if not stop_words:
+        raise ValueError("Stop words not loaded.")
     
-    if cache is not None:
-        cache[data] = data
+    data = data.lower().split(" ")
+    data = [re.sub(r'[^\w\s\t\n]','',word) for word in data if word not in stop_words]
+    
+
+    # np array for faster processing
+    data = np.array(data)
 
     return data
 
 
-def get_mean_vector(data):
-    """
-    Get mean vector of data. for similarity search.
+# Load the stop words from file
+stop_words = load_stop_words(STOP_WORDS_PATH)
 
-    input: np.array data
-    output: mean vector
-    """
-    # if not data:
-    #     raise ValueError("Data is empty, nothing to get mean of.")
-    
-    # average of the sum of all the word embeddings
-    sum_vec = np.sum(data, axis=0)
-    return np.mean(sum_vec)
-
+# Preprocess the input text
 to_process = "Sigurður segir að í fyrstu hafi aðeins verið talið að einn einstaklingur væri um borð, en síðan kom á daginn að þeir hafi verið fleiri."
+tokens = preprocess(to_process, stop_words)
 
-processed = preprocess(to_process)
-processed = np.array(processed)
+# Convert the preprocessed text into word embeddings
+embeddings = convert_to_word_embeddings(tokens)
 
-# tokanize
-processed = [vectors.get_vector(word, norm=True) for word in processed]
+# Calculate the mean vector of the word embeddings
+mean_vector = calculate_mean_vector(embeddings)
 
-print(get_mean_vector(processed))
-
+print(mean_vector)
