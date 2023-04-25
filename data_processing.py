@@ -79,6 +79,19 @@ def preprocess(data='', stop_words=None):
     return data
 
 
+def save_to_db(mean_vector, text):
+    """
+    Saves the mean vector and the text to the database.
+    """
+    if mean_vector.size < 0:
+        raise ValueError("Mean vector is empty, nothing to save to the database.")
+    
+    if text == '':
+        raise ValueError("Text is empty, nothing to save to the database.")
+    
+    with open("./db.txt", "a") as f:
+        f.write(f"{mean_vector}\n{text}")
+
 # Load the stop words from file
 stop_words = load_stop_words("./stop-words/function-words.txt")
 
@@ -92,4 +105,5 @@ embeddings = convert_to_word_embeddings(tokens)
 # Calculate the mean vector of the word embeddings
 mean_vector = calculate_mean_vector(embeddings)
 
-print(mean_vector)
+# save to `db.txt`
+save_to_db(mean_vector, to_process)

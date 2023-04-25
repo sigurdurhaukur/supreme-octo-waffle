@@ -16,3 +16,15 @@ download data
 
  unzip /work/word2vec_models.zip
 ```
+
+database format:
+
+```bash
+<mean_vector>
+<value>
+
+<mean_vector>
+<value>
+
+...
+```
