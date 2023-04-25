@@ -7,6 +7,9 @@
 [] search
 [] display
 
+remove stop words using a list from clarin.is
+ - https://repository.clarin.is/repository/xmlui/handle/20.500.12537/124
+
 - build a csv containing the data
   - headers: `average vector embedding` and `sentence`
 - read contents of the csv
