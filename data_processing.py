@@ -6,8 +6,6 @@ from gensim.models import KeyedVectors
 vectors = KeyedVectors.load(
     './word2vec-isl/IGC_2021_lemmatized__350__13__9__5__0_05__1_vectors.kv')
 
-STOP_WORDS_PATH = "./stop-words/function-words.txt"
-
 def load_stop_words(stop_words_path):
     if stop_words_path == '':
         raise ValueError("Stop words path is empty, nothing to load.")
@@ -82,7 +80,7 @@ def preprocess(data='', stop_words=None):
 
 
 # Load the stop words from file
-stop_words = load_stop_words(STOP_WORDS_PATH)
+stop_words = load_stop_words("./stop-words/function-words.txt")
 
 # Preprocess the input text
 to_process = "Sigurður segir að í fyrstu hafi aðeins verið talið að einn einstaklingur væri um borð, en síðan kom á daginn að þeir hafi verið fleiri."
