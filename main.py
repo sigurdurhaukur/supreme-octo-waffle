@@ -5,7 +5,7 @@ import json
 # Create a client for your Weaviate instance
 client = weaviate.Client("http://localhost:8080")
 
-client.schema.delete_class("News")
+# client.schema.delete_class("News")
 
 class_obj = {
     "class": "News",

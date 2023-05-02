@@ -5,7 +5,14 @@ import styles from "@/styles/Home.module.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
+async function getData() {
+  const response = await fetch("http://localhost:8080/v1/objects");
+  const jsonData = await response.json();
+  console.log(jsonData);
+}
+
 export default function Home() {
+  getData();
   return (
     <>
       <Head>
