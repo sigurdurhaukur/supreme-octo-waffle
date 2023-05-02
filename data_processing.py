@@ -1,4 +1,4 @@
-from datasets import Features, Value, DatasetSchema
+
 import re
 import numpy as np
 from gensim.models import KeyedVectors
@@ -34,8 +34,6 @@ def calculate_mean_vector(embeddings):
     #     raise ValueError(
     #         "Embeddings are empty, nothing to calculate mean vector of.")
 
-    # average of the sum of all the word embeddings
-    # sum_vec = np.sum(embeddings, axis=0)
     return np.mean(embeddings, axis=0)
 
 
@@ -87,62 +85,15 @@ def preprocess(data='', stop_words=None):
     return data
 
 
-def save_to_db(mean_vector, text):
-    """
-    Saves the mean vector and the text to the database.
-    """
-    if mean_vector.size < 0:
-        raise ValueError(
-            "Mean vector is empty, nothing to save to the database.")
-
-    if text == '':
-        raise ValueError("Text is empty, nothing to save to the database.")
-
-    with open("./db.txt", "a") as f:
-        f.write(f"{mean_vector}\n{text}\n")
-
-
-# Load the stop words from file
-stop_words = load_stop_words("./stop-words/function-words.txt")
-
-# Preprocess the input text
-to_process = [
-    "Aldrei er góð vísa of oft kveðin",
-    "Aldrei nær sá heilum eyri er hálfan fyrirlítur",
-    "Aldrei verður tófa trygg",
-    "Allar ár renna til sjávar",
-    "Allir hafa nokkuð til síns máls",
-    "Allir hanar hafa kambinn",
-    "Allir renna blint í sjóinn",
-    "Allt tekur enda um síðir",
-    "Allir vilja elli bíða, en enginn hennar mein líða",
-    "Allir vilja síns böls blindir vera",
-    "Allt er vænt sem vel er grænt",
-    "Auðkenndur er asninn á eyrunum",
-    "Auðvelt er að lofa, örðugt að efna"]
-
-for item in to_process:
-    to_process = item
-
+def process_text(to_process):
+    # Load the stop words from file
+    stop_words = load_stop_words("./stop-words/function-words.txt")
     tokens = preprocess(to_process, stop_words)
 
     # Convert the preprocessed text into word embeddings
     embeddings = convert_to_word_embeddings(tokens)
-    print(embeddings[0].shape)
 
     # Calculate the mean vector of the word embeddings
     mean_vector = calculate_mean_vector(embeddings)
-    print(mean_vector.shape)
 
-    # save to `db.txt`
-    # save_to_db(mean_vector, to_process)
-
-
-schema = DatasetSchema(
-    features=Features(
-        {
-            "input": Value("string"),
-            "label": Value("int64")
-        }
-    )
-)
+    return mean_vector
