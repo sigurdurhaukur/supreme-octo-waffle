@@ -33,7 +33,6 @@ def calculate_mean_vector(embeddings):
     # if embeddings.size < 0:
     #     raise ValueError(
     #         "Embeddings are empty, nothing to calculate mean vector of.")
-
     return np.mean(embeddings, axis=0)
 
 
@@ -54,7 +53,7 @@ def convert_to_word_embeddings(data):
             embedding = np.reshape(embedding, (1, -1)).astype('float32')
 
             word_embeddings.append(embedding)
-        except KeyError:
+        except:
             pass
 
     return word_embeddings
@@ -77,7 +76,7 @@ def preprocess(data='', stop_words=None):
 
     data = data.lower().split(" ")
     data = [re.sub(r'[^\w\s\t\n]', '', word)
-            for word in data if word not in stop_words]
+            for word in data if word not in stop_words and word != '']
 
     # np array for faster processing
     data = np.array(data)
@@ -89,6 +88,7 @@ def process_text(to_process):
     # Load the stop words from file
     stop_words = load_stop_words("./stop-words/function-words.txt")
     tokens = preprocess(to_process, stop_words)
+    print(tokens)
 
     # Convert the preprocessed text into word embeddings
     embeddings = convert_to_word_embeddings(tokens)
