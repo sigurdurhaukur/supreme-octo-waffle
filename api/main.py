@@ -1,5 +1,5 @@
-from fastapi import FastAPI
-from fastapi.responses import Response
+from fastapi import FastAPI, Request, Response
+from data_processing import vectorize
 
 app = FastAPI()
 
@@ -25,5 +25,7 @@ async def meta():
 
 
 @app.post("/vectors")
-async def vectors():
-    return {"text": [0.1, 0.2, 0.3, 0.4, 0.5]}
+async def vectors(request: Request):
+    to_process = Request.json()["text"]
+    vectors = vectorize(to_process)
+    return {"text": vectors}
