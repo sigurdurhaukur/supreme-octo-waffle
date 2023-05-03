@@ -2,8 +2,8 @@ import Head from "next/head";
 import Image from "next/image";
 import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
-
-const inter = Inter({ subsets: ["latin"] });
+const w2v = require("word2vec");
+import path from "path";
 
 async function getData() {
   const response = await fetch("http://localhost:8080/v1/objects");
@@ -11,8 +11,26 @@ async function getData() {
   console.log(jsonData);
 }
 
+const filePath = path.join(process.cwd(), "word2vec.kv");
+
+// Load the model
+async function loadModel(filePath: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    w2v.loadModel(filePath, (error: any, model: any) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(model);
+      }
+    });
+  });
+}
+
 export default function Home() {
   getData();
+  loadModel(filePath).then((model: any) => {
+    console.log(model);
+  });
   return (
     <>
       <Head>
@@ -27,3 +45,5 @@ export default function Home() {
     </>
   );
 }
+
+// export default WordPage;

@@ -17,6 +17,14 @@ download data
  unzip -j /work/word2vec_models.zip "IGC_2021_lemmatized__350__13__9__5__0_05__1_vectors.kv" "READ.ME"
 ```
 
+
+
+to build the api image
+
+```bash
+ docker build -t apiimage .
+```
+
 database engine, weaviate. https://www.semi.technology/developers/weaviate/current/get-started/installation.html
 
 to start the docker container (it contains the database)

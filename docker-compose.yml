@@ -1,25 +1,44 @@
 ---
 version: '3.4'
 services:
+      
   weaviate:
+    # depends_on:
+    #   api:
+    #       condition: service_healthy
     command:
-    - --host
-    - 0.0.0.0
-    - --port
-    - '8080'
-    - --scheme
-    - http
+      - --host
+      - 0.0.0.0
+      - --port
+      - '8080'
+      - --scheme
+      - http
     image: semitechnologies/weaviate:1.18.4
     ports:
     - 8080:8080
-    restart: on-failure:0
+    restart: on-failure:5
     environment:
+      TRANSFORMERS_INFERENCE_API: 'http://api:8000'
       QUERY_DEFAULTS_LIMIT: 25
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
       PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
-      DEFAULT_VECTORIZER_MODULE: 'none'
-      ENABLE_MODULES: ''
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-transformers'
+      ENABLE_MODULES: 'text2vec-transformers'
       CLUSTER_HOSTNAME: 'node1'
-      TRANSFORMERS_INFERENCE_API: 'http://localhost:8090'
-  
+
+  api:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    build: .
+    volumes:
+      - ./api:/app/api
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ...
