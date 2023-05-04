@@ -4,7 +4,7 @@ import numpy as np
 from gensim.models import KeyedVectors
 
 # load pre-trained word2vec embeddings
-vectors = KeyedVectors.load('./word2vec/word2vec.kv')
+vectors = KeyedVectors.load('./api/word2vec/word2vec.kv')
 
 
 def load_stop_words(stop_words_path):

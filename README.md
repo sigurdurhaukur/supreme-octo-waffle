@@ -22,7 +22,7 @@ download data
 to build the api image
 
 ```bash
- docker build -t apiimage .
+ docker-compose build api
 ```
 
 database engine, weaviate. https://www.semi.technology/developers/weaviate/current/get-started/installation.html
