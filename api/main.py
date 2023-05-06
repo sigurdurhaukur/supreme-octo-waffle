@@ -31,10 +31,3 @@ async def read_item(request: Request, response: Response):
     except Exception as e:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return {"error": str(e)}
-    
-# @app.post("/vectors")
-# async def vectors(request: Request):
-#     data = await request.json()
-#     text = data["text"]
-#     vectors = vectorize(text).tolist()
-#     return {"text": text, "vectors": vectors}
