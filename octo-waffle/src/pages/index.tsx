@@ -1,5 +1,6 @@
 import Head from "next/head";
 import useSWR from "swr";
+import { useCallback, useRef, useState, useEffect } from "react";
 
 // components
 import Card from "../components/card.js";
@@ -7,18 +8,17 @@ import Card from "../components/card.js";
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Home() {
-  const query =
-    "Elliði Vignisson, bæjarstjóri Ölfuss, og Karl Wernerson, stofnandi Kamba, handssala byggingarstaðinn og fyrirhugað útlit verskmiðjunnar. ";
-  const { data, error, isLoading } = useSWR(
-    `/api/search?query=${query}`,
-    fetcher
-  );
+  const [query, setQuery] = useState("mamma");
+  const { data, error } = useSWR(`/api/search?query=${query}`, fetcher);
+  const isLoading = !data && !error;
+  const inputRef = useRef(null);
+
+  const onChange = useCallback((e) => {
+    const query = e.target.value;
+    setQuery(query);
+  }, []);
+
   console.log(data);
-
-  if (error) return <div>failed to load</div>;
-  if (isLoading) return <div>loading...</div>;
-
-  const cards = data.map(({ text }, i: int) => <Card title={text} key={i} />);
 
   return (
     <>
@@ -31,9 +31,24 @@ export default function Home() {
       <main>
         <h1>Semantic search in Icelandic</h1>
 
-        <input type="text" />
-        <button type="submit"></button>
-        {data && <div className="cards">{cards}</div>}
+        <input
+          type="text"
+          value={query}
+          onChange={onChange}
+          ref={inputRef}
+          placeholder="Search for a word"
+        />
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div>Error: {error.message}</div>
+        ) : (
+          <div className="cards">
+            {data.map(({ text, _additional }, i: int) => (
+              <Card title={text} certainty={_additional.certainty} key={i} />
+            ))}
+          </div>
+        )}
       </main>
     </>
   );
