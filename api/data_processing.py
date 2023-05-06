@@ -83,7 +83,7 @@ def preprocess(data='', stop_words=None):
     return data
 
 
-def vectorize(to_process):
+async def vectorize_text(to_process):
     # Load the stop words from file
     stop_words = load_stop_words("./stop-words/function-words.txt")
     tokens = preprocess(to_process, stop_words)
