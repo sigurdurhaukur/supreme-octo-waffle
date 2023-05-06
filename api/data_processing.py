@@ -4,8 +4,11 @@ import numpy as np
 from gensim.models import KeyedVectors
 
 # load pre-trained word2vec embeddings
-vectors = KeyedVectors.load('./api/word2vec/word2vec.kv')
 
+try:
+    vectors = KeyedVectors.load('./api/word2vec/word2vec.kv')
+except:
+    raise ValueError("Word embeddings not found.")
 
 def load_stop_words(stop_words_path):
     if stop_words_path == '':
@@ -29,9 +32,7 @@ def calculate_mean_vector(embeddings):
     input: np.array data
     output: mean vector
     """
-    # if embeddings.size < 0:
-    #     raise ValueError(
-    #         "Embeddings are empty, nothing to calculate mean vector of.")
+
     try:    
         return np.mean(embeddings, axis=0)
     except:
