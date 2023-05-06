@@ -1,14 +1,31 @@
-
 import re
 import numpy as np
 from gensim.models import KeyedVectors
 
 # load pre-trained word2vec embeddings
-vectors = KeyedVectors.load('./api/word2vec/word2vec.kv')
+
+try:
+    vectors = KeyedVectors.load("./api/word2vec/word2vec.kv")
+except:
+    raise ValueError("Word embeddings not found.")
+
+
+def similarity(word1, word2):
+    """
+    calculates similarity between two words
+
+    input: two words
+    output: similarity score
+    """
+
+    try:
+        return vectors.similarity(word1, word2)
+    except:
+        raise ValueError("Word embeddings not found.")
 
 
 def load_stop_words(stop_words_path):
-    if stop_words_path == '':
+    if stop_words_path == "":
         raise ValueError("Stop words path is empty, nothing to load.")
 
     stop_words = set()
@@ -29,10 +46,13 @@ def calculate_mean_vector(embeddings):
     input: np.array data
     output: mean vector
     """
-    # if embeddings.size < 0:
-    #     raise ValueError(
-    #         "Embeddings are empty, nothing to calculate mean vector of.")
-    return np.mean(embeddings, axis=0)
+
+    try:
+        return np.mean(embeddings, axis=0)
+    except:
+        raise ValueError(
+            "Embeddings are not in the correct format. Can't calculate mean vector."
+        )
 
 
 def convert_to_word_embeddings(data):
@@ -42,6 +62,7 @@ def convert_to_word_embeddings(data):
     input: list of preprocessed data
     output: list of word vectors
     """
+
     # if not data.any():
     #     raise ValueError("Data is empty, nothing to tokenize.")
 
@@ -49,7 +70,7 @@ def convert_to_word_embeddings(data):
     for word in data:
         try:
             embedding = vectors.get_vector(word, norm=True)
-            embedding = np.reshape(embedding, (1, -1)).astype('float32')
+            embedding = np.reshape(embedding, (1, -1)).astype("float32")
 
             word_embeddings.append(embedding)
         except:
@@ -58,7 +79,7 @@ def convert_to_word_embeddings(data):
     return word_embeddings
 
 
-def preprocess(data='', stop_words=None):
+def preprocess(data="", stop_words=None):
     """
     Preprocess data. Removes stop words and punctuation. And returns word embeddings.
 
@@ -67,27 +88,42 @@ def preprocess(data='', stop_words=None):
 
     time complexity: O(n)
     """
-    if data == '':
+
+    if data == "":
         raise ValueError("Data is empty, nothing to preprocess.")
 
     if not stop_words:
         raise ValueError("Stop words not loaded.")
 
-    data = data.lower().split(" ")
-    data = [re.sub(r'[^\w\s\t\n]', '', word)
-            for word in data if word not in stop_words and word != '']
+    try:
+        data = data.lower().split(" ")
+        data = [
+            re.sub(r"[^\w\s\t\n]", "", word)
+            for word in data
+            if word not in stop_words and word != ""
+        ]
 
-    # np array for faster processing
-    data = np.array(data)
+        # np array for faster processing
+        data = np.array(data)
+        return data
+    except:
+        raise ValueError("Data is not in the correct format. Can't preprocess.")
 
-    return data
 
+async def vectorize(data):
+    """
+    vectorizes the text. calculates mean vector of the word embeddings. the input can be of variable length.
 
-def vectorize(to_process):
+    input: str data
+    output: mean vector of the data
+    """
+
+    if data == "":
+        raise ValueError("Data is empty, nothing to vectorize.")
+
     # Load the stop words from file
     stop_words = load_stop_words("./stop-words/function-words.txt")
-    tokens = preprocess(to_process, stop_words)
-    print(tokens)
+    tokens = preprocess(data, stop_words)
 
     # Convert the preprocessed text into word embeddings
     embeddings = convert_to_word_embeddings(tokens)

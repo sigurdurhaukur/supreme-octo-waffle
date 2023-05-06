@@ -1,14 +1,24 @@
 import Head from "next/head";
+import useSWR from "swr";
 
-async function search() {
-  const response = await fetch("/api/search?query=fiskur");
-  const jsonData = await response.json();
-  console.log(jsonData);
-}
+// components
+import Card from "../components/card.js";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Home() {
-  let data = search();
+  const query =
+    "Elliði Vignisson, bæjarstjóri Ölfuss, og Karl Wernerson, stofnandi Kamba, handssala byggingarstaðinn og fyrirhugað útlit verskmiðjunnar. ";
+  const { data, error, isLoading } = useSWR(
+    `/api/search?query=${query}`,
+    fetcher
+  );
   console.log(data);
+
+  if (error) return <div>failed to load</div>;
+  if (isLoading) return <div>loading...</div>;
+
+  const cards = data.map(({ text }, i: int) => <Card title={text} key={i} />);
 
   return (
     <>
@@ -20,6 +30,10 @@ export default function Home() {
       </Head>
       <main>
         <h1>Semantic search in Icelandic</h1>
+
+        <input type="text" />
+        <button type="submit"></button>
+        {data && <div className="cards">{cards}</div>}
       </main>
     </>
   );

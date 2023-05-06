@@ -16,16 +16,17 @@ export default function handler(
   res: NextApiResponse<Data>
 ) {
   const query = req.query.query;
+  // const query = "mamma";
   console.log(query);
   client.graphql
     .get()
     .withClassName("News")
-    .withFields("text _additional{certainty distance}")
+    .withFields("text _additional{certainty}")
     .withNearText({
       concepts: [query],
-      certainty: 0.7,
+      // certainty: 0.7,
     })
-    .withLimit(2)
+    .withLimit(10)
     .do()
     .then((result: any) => {
       console.log(result);
