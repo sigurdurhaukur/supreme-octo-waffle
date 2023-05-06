@@ -17,7 +17,7 @@ download data
  unzip -j /work/word2vec_models.zip "IGC_2021_lemmatized__350__13__9__5__0_05__1_vectors.kv" "READ.ME"
 ```
 
-
+api reference: https://github.com/laura-ham/t2v-spacy-models/
 
 to build the api image
 
