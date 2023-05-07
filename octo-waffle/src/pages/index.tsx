@@ -8,17 +8,28 @@ import Card from "../components/card.js";
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Home() {
-  const [query, setQuery] = useState("mamma");
-  const { data, error } = useSWR(`/api/search?query=${query}`, fetcher);
-  const isLoading = !data && !error;
+  const [query, setQuery] = useState("");
+  const [noResult, setNoResult] = useState(false);
+  const { data, error, isLoading } = useSWR(
+    `/api/search?query=${query}`,
+    fetcher
+  );
   const inputRef = useRef(null);
 
   const onChange = useCallback((e) => {
     const query = e.target.value;
     setQuery(query);
+    setNoResult(false);
   }, []);
 
-  console.log(data);
+  // Check if data is null or an empty array to determine if there are no results
+  useEffect(() => {
+    if (!isLoading && data && data.length === 0) {
+      setNoResult(true);
+    }
+  }, [data, isLoading]);
+
+  // console.log(data);
 
   return (
     <>
@@ -29,26 +40,37 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <h1>Semantic search in Icelandic</h1>
+        <header>
+          <h1>Leiftur | hröð merkingarfræðileg leit á Íslensku</h1>
+          <p>(e. fast semantic search in Icelandic)</p>
+        </header>
 
-        <input
-          type="text"
-          value={query}
-          onChange={onChange}
-          ref={inputRef}
-          placeholder="Search for a word"
-        />
-        {isLoading ? (
-          <div>Loading...</div>
-        ) : error ? (
-          <div>Error: {error.message}</div>
-        ) : (
-          <div className="cards">
-            {data.map(({ text, _additional }, i: int) => (
-              <Card title={text} certainty={_additional.certainty} key={i} />
-            ))}
-          </div>
-        )}
+        <div className="result">
+          <input
+            type="text"
+            value={query}
+            onChange={onChange}
+            ref={inputRef}
+            placeholder="leitarmynd"
+          />
+          {noResult && <div className="info noresult">Engar niðurstöður</div>}
+          {isLoading ? (
+            <div className="info loading">Hleður...</div>
+          ) : error ? (
+            <div className="info error">Villa: {error.message}</div>
+          ) : (
+            <div className="cards">
+              {data.map(({ text, _additional, summary }, i: int) => (
+                <Card
+                  title={text}
+                  certainty={_additional.certainty}
+                  summary={summary}
+                  key={i}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </>
   );

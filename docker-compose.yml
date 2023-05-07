@@ -14,6 +14,8 @@ services:
       - --scheme
       - http
     image: semitechnologies/weaviate:1.18.4
+    # volumes:
+      # - ./data:/var/lib/weaviate
     ports:
     - 8080:8080
     restart: on-failure:5

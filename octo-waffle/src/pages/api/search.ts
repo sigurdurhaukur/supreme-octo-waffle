@@ -1,4 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import { error } from "console";
 import type { NextApiRequest, NextApiResponse } from "next";
 import weaviate, { WeaviateClient } from "weaviate-ts-client";
 
@@ -8,7 +9,9 @@ const client: WeaviateClient = weaviate.client({
 });
 
 type Data = {
-  name: string;
+  title: string;
+  _additional: { certainty: number };
+  summary: string;
 };
 
 export default function handler(
@@ -20,8 +23,8 @@ export default function handler(
   console.log(query);
   client.graphql
     .get()
-    .withClassName("News")
-    .withFields("text _additional{certainty}")
+    .withClassName("Articles")
+    .withFields("text url summary _additional{certainty}")
     .withNearText({
       concepts: [query],
       // certainty: 0.7,
@@ -30,12 +33,15 @@ export default function handler(
     .do()
     .then((result: any) => {
       console.log(result);
-      for (const item of result.data.Get.News) {
+      for (const item of result.data.Get.Articles) {
         console.log(item);
       }
-      res.status(200).json(result.data.Get.News);
+      res.status(200).json(result.data.Get.Articles);
     })
-    .catch(console.error);
+    .catch((err) => {
+      console.log(err);
+      res.status(200).json([]);
+    });
 }
 
 // client.schema

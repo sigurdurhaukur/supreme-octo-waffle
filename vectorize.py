@@ -1,66 +1,55 @@
 import weaviate
-from data_processing import process_text
+import wikipediaapi
 import json
-
-# Create a client for your Weaviate instance
-client = weaviate.Client("http://localhost:8080")
+import requests
 
 
-def cleanup():
-    client.schema.delete_class("News")
+def initialize_schema(client):
+    client.schema.delete_all()
 
-
-def initialize_schema():
     class_obj = {
-        "class": "News",
-        "description": "News articles",
+        "class": "Articles",
+        "description": "Icelandic wikipedia articles",
         "vectorizer": "text2vec-transformers",
+        "properties": [
+            {
+                "dataType": ["string"],
+                "description": "Title of the article",
+                "name": "title",
+                "moduleConfig": {"text2vec-transformers": {"skip": True}},
+            },
+            {
+                "dataType": ["string"],
+                "description": "url to the article",
+                "name": "url",
+                "moduleConfig": {"text2vec-transformers": {"skip": True}},
+            },
+            {
+                "dataType": ["text"],
+                "description": "short summary of the article",
+                "name": "summary",
+            },
+        ],
     }
 
     client.schema.create_class(class_obj)
 
 
-def add_data():
+def add_data(client, data):
     # import data
-    data = [
-        {
-            "title": "Seg­ir dótt­ur sína og þrjú barna­börn á meðal lát­inna ",
-            "url": "https://www.mbl.is/frettir/erlent/2023/05/02/segir_dottur_sina_og_thrju_barnaborn_a_medal_latinn/",
-        },
-        {
-            "title": "Líf Þorsteins hefur alla tíð snúist um sjóinn og fiskveiðar. Á fertugsaldri uppgötvaði hann svo",
-            "url": "https://mbl.is/",
-        },
-        {
-            "title": "Þurfti að slaka á og fór á fullt í hjól­reiðar ",
-            "url": "https://www.mbl.is/frettir/innlent/2023/05/02/thurfti_ad_slaka_a_og_for_a_fullt_i_hjolreidar/",
-        },
-        {
-            "title": "Til stóð að gera upp þennan gamla Land Rover sem stóð í húsakynnum vélsmiðjunnar Verma. ",
-            "url": "https://mbl.is/",
-        },
-        {
-            "title": "Starf­semi í hús­inu og mikið tjón ",
-            "url": "https://www.mbl.is/frettir/innlent/2023/05/02/starfsemi_i_husinu_og_mikid_tjon/",
-        },
-        {
-            "title": "Elliði Vignisson, bæjarstjóri Ölfuss, og Karl Wernerson, stofnandi Kamba, handssala byggingarstaðinn og fyrirhugað útlit verskmiðjunnar. ",
-            "url": "https://mbl.is/",
-        },
-        {
-            "title": "Karl Werners­son bygg­ir verk­smiðju í Þor­láks­höfn ",
-            "url": "https://www.mbl.is/vidskipti/frettir/2023/05/02/karl_wernersson_byggir_verksmidju_i_thorlakshofn/",
-        },
-    ]
 
     # Configure a batch process
     with client.batch as batch:
         batch.batch_size = 1  # 100
         for i, d in enumerate(data):
             try:
-                properties = {"text": d["title"], "url": d["url"]}
+                properties = {
+                    "text": d["title"],
+                    "url": d["url"],
+                    "summary": d["summary"],
+                }
 
-                client.batch.add_data_object(properties, "News")
+                client.batch.add_data_object(properties, "Articles")
             except Exception as e:
                 # print(e)
                 print(
@@ -69,18 +58,28 @@ def add_data():
                 pass
 
 
-def get_data():
-    all_objects = client.data_object.get()
-    print(json.dumps(all_objects))
+def get_data(wiki_wiki):
+    """gets data from wikipedia"""
+
+    response = requests.get("https://is.wikipedia.org/api/rest_v1/page/random/title")
+    if response.status_code == 200:
+        data = response.json()
+        title = data["items"][0]["title"]
+        page = wiki_wiki.page(title)
+
+    else:
+        print("Error: Could not fetch random page title")
+
+    return {
+        "title": page.title,
+        "summary": page.summary,
+        "url": page.fullurl,
+    }
 
 
-def search(query):
-    # search for query
-    # query = "Land Rover"
-    # custom_embedding = process_text(query)
-
+def search(client, query):
     result = (
-        client.query.get("News", ["text", "url"])
+        client.query.get("Articles", ["text", "url", "summary"])
         .with_near_text({"concepts": [query]})
         # .with_limit(2)
         .with_additional(["certainty"])
@@ -89,15 +88,44 @@ def search(query):
 
     print(f"query: {query}")
 
-    # print(result)
+    print(result)
     print("result:")
-    for i in result["data"]["Get"]["News"]:
-        print(i["text"])
-    # print(i)
-    # print(i['_additional']['certainty'], i['text'], '\n')
-    # print(i['_additional']['certainty'], i['text'], i['url'], '\n')
+    for i in result["data"]["Get"]["Articles"]:
+        # print(i["text"])
+        # print(i)
+        print(i["_additional"]["certainty"], i["text"], "\n")
+        # print(i['_additional']['certainty'], i['text'], i['url'], '\n')
 
 
-# cleanup()
-# add_data()
-search("Land Rover")
+if __name__ == "__main__":
+    # Create a client for your Weaviate instance
+    client = weaviate.Client("http://localhost:8080")
+    initialize_schema(client)
+
+    wiki_wiki = wikipediaapi.Wikipedia("is")
+    max_pages = 2000
+    data = []
+    for i in range(max_pages):
+        print(f"getting page {i}")
+        new_page = get_data(wiki_wiki)
+        if new_page["title"] not in [page["title"] for page in data]:
+            data.append(new_page)
+        else:
+            print(f"Skipping page {i} with duplicate title: {new_page['title']}")
+
+    print(f"Fetched {len(data)} unique pages")
+
+    # print(data)
+    add_data(client, data)
+    # # get_data(client)
+    # search(
+    #     client,
+    #     "þekktur fyrir viðskiptaumsvif sín og stuðning sinn við ýmsa pólitíska málstaði. Moon var stofnandi og andlegur leiðtogi Sameiningarkirkjunnar, kristins söfnuðar sem gekk út á þá trúarkenningu að Moon sjálfur væri nýr Messías sem hefði verið falið að ljúka hjálpræðisverkinu sem Jesú mistókst að vinna fyrir 2000 árum. Fylgismenn Moons eru gjarnan kallaðir „Moonistar“ ",
+    # )
+
+    # print("\n")
+
+    # search(
+    #     client,
+    #     "Frakkland",
+    # )
