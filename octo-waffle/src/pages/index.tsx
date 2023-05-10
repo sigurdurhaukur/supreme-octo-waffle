@@ -41,7 +41,7 @@ export default function Home() {
       </Head>
       <main>
         <header>
-          <h1>Leiftur | hröð merkingarfræðileg leit á Íslensku</h1>
+          <h1>Kaboom | hröð merkingarfræðileg leit á Íslensku</h1>
           <p>(e. fast semantic search in Icelandic)</p>
         </header>
 
