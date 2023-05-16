@@ -1,6 +1,25 @@
+/* font */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap");
+
+/* sanitize */
+@import url("https://unpkg.com/sanitize.css");
+
 :root {
   --body-padding: 1rem;
+  --max-width: 80rem;
   --bg-color: #f5f5f5;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a,
+span {
+  font-family: "Manrope", sans-serif;
 }
 
 body {
