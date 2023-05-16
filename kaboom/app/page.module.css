@@ -1,0 +1,70 @@
+.main {
+  padding-top: 5rem;
+}
+
+.header {
+  max-width: min(50vw, calc(var(--max-width, 80rem) * 0.45));
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  margin-bottom: 10rem;
+}
+
+.header h1 {
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  line-height: 1.25;
+  /* padding: 1rem 0; */
+}
+
+.header h2 {
+  --color-1: black;
+  --color-2: #e66300;
+
+  font-size: clamp(1rem, 2vw, 1.8rem);
+  background: linear-gradient(to right, var(--color-1), var(--color-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header h2:hover {
+  animation-play-state: paused;
+}
+
+.cta {
+  margin-top: 1em;
+  padding: 0.5em 1em;
+  background-color: rgb(210, 210, 210);
+  width: fit-content;
+
+  text-decoration: none;
+  text-transform: uppercase;
+  color: black;
+
+  border-radius: 1em 0 1em 0;
+  transition: 0.5s;
+}
+
+.cta:hover {
+  background-color: rgb(200, 200, 200);
+  border-radius: 0 1em 0 1em;
+
+  transition: 0.5s;
+}
+
+/* smaller screens */
+@media (max-width: 800px) {
+  .header {
+    max-width: 100%;
+  }
+
+  .header h1 {
+    font-size: 3rem;
+    line-height: 1.25;
+    max-width: 17ch;
+  }
+
+  .header h2 {
+    font-size: 1.2rem;
+  }
+}
