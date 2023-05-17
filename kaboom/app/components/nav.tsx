@@ -10,10 +10,10 @@ export default function Nav() {
   function handleHamburgerClick() {
     if (!isMenuOpen) {
       setIsMenuOpen(true);
-      console.log("open");
+      document.body.style.overflow = "hidden";
     } else {
       setIsMenuOpen(false);
-      console.log("close");
+      document.body.style.overflow = "auto";
     }
   }
 
