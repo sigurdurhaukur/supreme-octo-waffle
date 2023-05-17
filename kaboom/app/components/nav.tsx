@@ -17,20 +17,27 @@ export default function Nav() {
     }
   }
 
+  function closeMenu() {
+    if (!isMenuOpen) return;
+
+    setIsMenuOpen(false);
+    document.body.style.overflow = "auto";
+  }
+
   return (
     <nav className={isMenuOpen ? styles.nav__active : styles.nav}>
-      <div className={styles.logo}>
+      <div className={styles.logo} onClick={closeMenu}>
         <Link href="/">kaboom</Link>
         <span className={styles.logo__span}>An AI search engine</span>
       </div>
       <div className={styles.nav__links}>
-        <Link className={styles.nav__a} href="/solutions">
+        <Link className={styles.nav__a} href="/solutions" onClick={closeMenu}>
           Solutions
         </Link>
-        <Link className={styles.nav__a} href="/products">
+        <Link className={styles.nav__a} href="/products" onClick={closeMenu}>
           Products
         </Link>
-        <Link className={styles.nav__a} href="/about">
+        <Link className={styles.nav__a} href="/about" onClick={closeMenu}>
           About Kaboom
         </Link>
       </div>
