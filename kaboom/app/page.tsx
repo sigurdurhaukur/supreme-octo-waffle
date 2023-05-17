@@ -1,5 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import Image from "next/image";
+import svg from "../public/bgDesktop.svg";
 
 export default function Home() {
   return (
@@ -10,6 +12,11 @@ export default function Home() {
         <Link className={styles.cta} href="/products">
           start building for free
         </Link>
+        <Image
+          src={svg}
+          alt={"background illustration"}
+          className={styles.header__svg}
+        />
       </header>
       <section className={styles.section}>
         <h1>Why leaders are choosing Kaboom...</h1>
