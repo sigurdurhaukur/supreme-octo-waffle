@@ -77,8 +77,6 @@
 
     flex-direction: column;
     gap: 1em;
-
-    padding: auto;
   }
 
   .hamburger__wrapper {
