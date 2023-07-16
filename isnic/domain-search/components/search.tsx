@@ -7,11 +7,11 @@ function SearchResults({ searchResult }) {
   return (
     <>
       {searchResult &&
-        searchResult.map((item, index: number) => (
+        searchResult.map(({ word, similarity }, index: number) => (
           <p key={index}>
-            <span className={styles.domain}>{item[0]}.is</span>
+            <span className={styles.domain}>{word}.is</span>
             <span className={styles.distance}>
-              {(item[1] * 100).toString().substring(0, 4)}%
+              {(similarity * 100).toString().substring(0, 4)}%
             </span>
           </p>
         ))}

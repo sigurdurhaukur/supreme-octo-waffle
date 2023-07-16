@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, Response, status
 from gensim.models import keyedvectors
+import subprocess
 
 word2vec = keyedvectors.KeyedVectors.load("./word2vec/word2vec.kv")
 
@@ -47,8 +48,16 @@ async def search(word: str):
         try:
             topn = 10
             result = word2vec.similar_by_vector(average_vector, topn=topn)
+
+            for i in range(topn):
+                result[i] = {
+                    "word": result[i][0],
+                    "similarity": result[i][1],
+                    "info": None,
+                }
             return result
-        except:
+        except Exception as e:
+            print(e)
             return Response(status_code=404)
     else:
         return Response(status_code=404)
