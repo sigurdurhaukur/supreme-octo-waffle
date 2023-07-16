@@ -2,7 +2,9 @@ FROM python:3
 
 WORKDIR /app
 
-COPY api /app
+COPY ./api /app/api
+COPY ./requirements.txt /app
 
-RUN pip install fastapi uvicorn gensim
-# RUN pip --no-cache-dir install fastapi["all"] gensim
+RUN pip install -r requirements.txt
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

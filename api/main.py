@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Response, status
-from data_processing import vectorize
+from api.data_processing import vectorize
 
 app = FastAPI()
 
