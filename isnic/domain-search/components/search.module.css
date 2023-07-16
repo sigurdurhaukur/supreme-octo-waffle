@@ -19,3 +19,16 @@
 .searchResult {
   padding: 0 5em;
 }
+
+.searchResult p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+
+  margin: 1em;
+}
+.searchResult .domain {
+}
+
+.searchResult .distance {
+}

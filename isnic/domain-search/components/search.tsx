@@ -3,6 +3,22 @@
 import styles from "./search.module.css";
 import { useState } from "react";
 
+function SearchResults({ searchResult }) {
+  return (
+    <>
+      {searchResult &&
+        searchResult.map((item, index: number) => (
+          <p key={index}>
+            <span className={styles.domain}>{item[0]}.is</span>
+            <span className={styles.distance}>
+              {(item[1] * 100).toString().substring(0, 4)}%
+            </span>
+          </p>
+        ))}
+    </>
+  );
+}
+
 export default function Search() {
   const [searchResult, setSearchResult] = useState([]);
 
@@ -36,12 +52,8 @@ export default function Search() {
         />
       </div>
       <div className={styles.searchResult}>
-        {searchResult &&
-          searchResult.map((item, index: number) => (
-            <p key={index}>
-              {item[0]}.is {item[1]}
-            </p>
-          ))}
+        <h2>Search Results:</h2>
+        <SearchResults searchResult={searchResult} />
       </div>
     </>
   );
