@@ -21,13 +21,12 @@
 }
 
 .searchResult p {
-  margin: 0;
+  margin: 1em 0;
   display: flex;
   justify-content: space-between;
-
-  margin: 1em;
 }
 .searchResult .domain {
+  font-weight: bold;
 }
 
 .searchResult .distance {

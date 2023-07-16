@@ -11,7 +11,7 @@ function SearchResults({ searchResult }) {
           <p key={index}>
             <span className={styles.domain}>{word}.is</span>
             <span className={styles.distance}>
-              {(similarity * 100).toString().substring(0, 4)}%
+              {(similarity * 100).toString().substring(0, 4)}% similarity
             </span>
           </p>
         ))}
