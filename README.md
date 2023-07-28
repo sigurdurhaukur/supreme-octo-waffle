@@ -1,5 +1,13 @@
 # supreme-octo-waffle K-nn and FAISS
 
+
+## Todo
+
+- download the icelandic wiki, for actual real applications of search [1gb](https://library.kiwix.org/#lang=isl)
+- impliment a pipeline to put it into the vector database
+
+## General
+
 Uses word2vec embeddings and faiss to find the kth nearest neighbors of a given word. The embeddings can be found here https://clarin.is/. They were created by Friðriksdóttir, Steinunn Rut ; Daníelsson, Hjalti and Steingrímsson, Steinþór.
 
 dependencies:
