@@ -2,6 +2,7 @@ import weaviate
 import wikipediaapi
 import json
 import requests
+from isl_wiki import get_wikipedia_articles as get_isl_wiki_articles
 
 
 def initialize_schema(client):
@@ -40,13 +41,13 @@ def add_data(client, data):
 
     # Configure a batch process
     with client.batch as batch:
-        batch.batch_size = 1  # 100
+        batch.batch_size = 100  # 100
         for i, d in enumerate(data):
             try:
                 properties = {
-                    "text": d["title"],
-                    "url": d["url"],
-                    "summary": d["summary"],
+                    "text": d.title,
+                    "url": d.url,
+                    "summary": d.summary,
                 }
 
                 client.batch.add_data_object(properties, "Articles")
@@ -102,21 +103,25 @@ if __name__ == "__main__":
     client = weaviate.Client("http://localhost:8080")
     initialize_schema(client)
 
-    wiki_wiki = wikipediaapi.Wikipedia("is")
-    max_pages = 2000
-    data = []
-    for i in range(max_pages):
-        print(f"getting page {i}")
-        new_page = get_data(wiki_wiki)
-        if new_page["title"] not in [page["title"] for page in data]:
-            data.append(new_page)
-        else:
-            print(f"Skipping page {i} with duplicate title: {new_page['title']}")
+    data = get_isl_wiki_articles(max_articles=1e10)
+    print(f"Found {len(data)} articles")
+    print("adding data to weaviate")
+    add_data(client, data)
 
-    print(f"Fetched {len(data)} unique pages")
+    # wiki_wiki = wikipediaapi.Wikipedia("is")
+    # max_pages = 2000
+    # data = []
+    # for i in range(max_pages):
+    #     print(f"getting page {i}")
+    #     new_page = get_data(wiki_wiki)
+    #     if new_page["title"] not in [page["title"] for page in data]:
+    #         data.append(new_page)
+    #     else:
+    #         print(f"Skipping page {i} with duplicate title: {new_page['title']}")
+
+    # print(f"Fetched {len(data)} unique pages")
 
     # print(data)
-    add_data(client, data)
     # # get_data(client)
     # search(
     #     client,

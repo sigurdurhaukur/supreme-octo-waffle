@@ -1,9 +1,8 @@
 # supreme-octo-waffle K-nn and FAISS
 
-
 ## Todo
 
-- download the icelandic wiki, for actual real applications of search [1gb](https://library.kiwix.org/#lang=isl)
+- download the icelandic wiki, for actual real applications of search [10gb](https://dumps.wikimedia.org/other/static_html_dumps/current/is/)
 - impliment a pipeline to put it into the vector database
 
 ## General
@@ -42,8 +41,26 @@ curl -X POST -H "Content-Type: application/json" -d '{"text": "mamma"}' http://l
 
 database engine, weaviate. https://www.semi.technology/developers/weaviate/current/get-started/installation.html
 
+## Quick start
+
+open docker desktop and make sure it is running
+
 to start the docker container (it contains the database)
 
 ```bash
 docker-compose up -d
 ```
+
+to start the front end
+
+```bash
+cd octo-waffle
+npm run dev
+```
+
+## some important things
+
+- the database is running on port 8080
+- the front end is running on port 3000
+- the api is running on port 9000
+- to add data or to manage the database see `./vectorize.py`
