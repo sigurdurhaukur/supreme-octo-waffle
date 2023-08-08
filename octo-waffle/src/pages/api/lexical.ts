@@ -22,9 +22,10 @@ export default function handler(
     .get()
     .withClassName("Articles")
     .withFields("text url summary _additional{certainty}")
-    .withNearText({
-      concepts: [query],
-      // certainty: 0.7,
+    .withWhere({
+      path: ["summary"],
+      operator: "Equal",
+      valueText: query,
     })
     .withLimit(10)
     .do()

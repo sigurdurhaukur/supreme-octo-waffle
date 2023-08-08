@@ -1,29 +1,42 @@
 import os
 import bs4
 import time
+import random
 
 
 class Article:
-    def __init__(self, url=""):
-        self.title, self.summary = self.read_file(url)
+    def __init__(self, url="", max_length=512):
         self.url = url
+        self.max_length = max_length
+        self.read_file(url)
+        self.links = self.extract_all_links()
 
     def read_file(self, file_path):
-        title = ""
-        summary = ""
+        self.title = ""
+        self.summary = ""
         with open(file_path, "r", encoding="utf-8") as file:
             text = file.read()
-            soup = bs4.BeautifulSoup(text, "html.parser")
-            title_tag = soup.find("h1")
+            self.soup = bs4.BeautifulSoup(text, "html.parser")
+            title_tag = self.soup.find("h1")
             if title_tag:
-                title = title_tag.text.strip()
+                self.title = title_tag.text.strip()
 
             # first paragraph, usually the summary
-            summary = soup.select("#bodyContent > p")
+            summary = self.soup.select("#bodyContent p")
             if summary:
-                summary = summary[0].text.strip()
+                self.summary = "".join([p.text for p in summary])
+                self.summary = self.summary.strip()
 
-        return title, summary
+                if len(self.summary) > self.max_length:
+                    self.summary = self.summary[: self.max_length]
+
+    def extract_all_links(self):
+        all_links = self.soup.find_all("a")
+        links = []
+        for link in all_links:
+            if link.has_attr("href"):
+                links.append(link["href"])
+        return links
 
 
 def filter_files(file_path):
@@ -89,3 +102,17 @@ if __name__ == "__main__":
     print(f"Extracted {len(articles)} articles")
     print(f"Time elapsed: {int(end - start)}s")
     print("-" * 20)
+
+    print("random article:", random.randrange(0, len(articles)))
+    random_article = articles[random.randint(0, len(articles))]
+    print(random_article.title)
+    print(random_article.summary)
+    print(random_article.url)
+
+    # one hot encode the links
+    all_links = []
+    for article in articles:
+        all_links.extend(article.links)
+
+    all_links = list(set(all_links))
+    print(f"Found {len(all_links)} unique links")

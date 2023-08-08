@@ -6,11 +6,11 @@ import Card from "../components/card.js";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function Home() {
+export default function Lexical() {
   const [query, setQuery] = useState("");
   const [noResult, setNoResult] = useState(false);
   const { data, error, isLoading } = useSWR(
-    `/api/search?query=${query}`,
+    `/api/lexical?query=${query}`,
     fetcher
   );
   const [amountOfArticles, setAmountOfArticles] = useState(0);
@@ -60,13 +60,8 @@ export default function Home() {
             <div className="info error">Villa: {error.message}</div>
           ) : (
             <div className="cards">
-              {data.map(({ text, _additional, summary }, i: int) => (
-                <Card
-                  title={text}
-                  // certainty={_additional.certainty} # keep commented when human testing
-                  summary={summary}
-                  key={i}
-                />
+              {data.map(({ text, summary }, i: int) => (
+                <Card title={text} summary={summary} key={i} />
               ))}
             </div>
           )}
@@ -75,5 +70,3 @@ export default function Home() {
     </>
   );
 }
-
-// export default WordPage;

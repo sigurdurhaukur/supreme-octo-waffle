@@ -7,7 +7,7 @@
 
 ## General
 
-Uses word2vec embeddings and faiss to find the kth nearest neighbors of a given word. The embeddings can be found here https://clarin.is/. They were created by Friðriksdóttir, Steinunn Rut ; Daníelsson, Hjalti and Steingrímsson, Steinþór.
+Uses word2vec embeddings and faiss to search through all of wikipedia [to see locally ](file://///wsl.localhost/Ubuntu/home/haukur/supreme-octo-waffle/is/index.html). The embeddings can be found here https://clarin.is/. They were created by Friðriksdóttir, Steinunn Rut ; Daníelsson, Hjalti and Steingrímsson, Steinþór.
 
 dependencies:
 
@@ -29,7 +29,7 @@ api reference: https://github.com/laura-ham/t2v-spacy-models/
 to build the api image
 
 ```bash
- docker-compose build api
+docker-compose build api
 ```
 
 testing the api locally

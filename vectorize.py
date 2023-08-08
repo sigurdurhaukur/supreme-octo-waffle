@@ -3,6 +3,7 @@ import wikipediaapi
 import json
 import requests
 from isl_wiki import get_wikipedia_articles as get_isl_wiki_articles
+import time
 
 
 def initialize_schema(client):
@@ -30,6 +31,11 @@ def initialize_schema(client):
                 "description": "short summary of the article",
                 "name": "summary",
             },
+            {
+                "dataType": ["text[]"],
+                "description": "list of links in the article",
+                "name": "links",
+            },
         ],
     }
 
@@ -48,6 +54,7 @@ def add_data(client, data):
                     "text": d.title,
                     "url": d.url,
                     "summary": d.summary,
+                    "links": d.links,
                 }
 
                 client.batch.add_data_object(properties, "Articles")
@@ -79,6 +86,8 @@ def get_data(wiki_wiki):
 
 
 def search(client, query):
+    start_time = time.time()
+
     result = (
         client.query.get("Articles", ["text", "url", "summary"])
         .with_near_text({"concepts": [query]})
@@ -89,7 +98,7 @@ def search(client, query):
 
     print(f"query: {query}")
 
-    print(result)
+    # print(result)
     print("result:")
     for i in result["data"]["Get"]["Articles"]:
         # print(i["text"])
@@ -97,16 +106,69 @@ def search(client, query):
         print(i["_additional"]["certainty"], i["text"], "\n")
         # print(i['_additional']['certainty'], i['text'], i['url'], '\n')
 
+    return time.time() - start_time
+
+
+def lexical_search(client, query, data):
+    "input: Article object, with title, summary, url, links"
+    start_time = time.time()
+
+    for i in data:
+        if query in i.summary:
+            print(i.title)
+
+    print(f"query: {query}")
+
+    return time.time() - start_time
+
+
+def measure_search_speed(client, data):
+    random_queries = [
+        "Frakkland",
+        "Alþingi",
+        "þingmannatal",
+        "mamma",
+        "pabbi",
+        "fiskur",
+        "hundur",
+        "Ólafur Ragnar Grímsson",
+        "Björk",
+        "Hafþór Júlíus Björnsson",
+        "Pleasantville er bandarísk kvikmynd frá árinu 1998. Hún fjallar um tvíburasystkin, leikin af Tobey Maguire og Reese Witherspoon, sem sogast inn í sjónvarpsþátt.",
+    ]
+
+    lexical_speeds = []
+    semantic_speeds = []
+    for query in random_queries:
+        lexical_speed = lexical_search(client, query, data)
+        semantic_speed = search(client, query)
+
+        lexical_speeds.append(lexical_speed)
+        semantic_speeds.append(semantic_speed)
+
+    # table of results
+    print("query\tlexical\tsemantic")
+    for i in range(len(random_queries)):
+        print(f"{random_queries[i]}\t{lexical_speeds[i]}\t{semantic_speeds[i]}\t")
+
+    lexical_speed = sum(lexical_speeds) / len(lexical_speeds)
+    semantic_speed = sum(semantic_speeds) / len(semantic_speeds)
+
+    print(f"lexical search speed: {lexical_speed}")
+    print(f"semantic search speed: {semantic_speed}")
+
 
 if __name__ == "__main__":
     # Create a client for your Weaviate instance
     client = weaviate.Client("http://localhost:8080")
-    initialize_schema(client)
+    # initialize_schema(client)
 
-    data = get_isl_wiki_articles(max_articles=1e10)
-    print(f"Found {len(data)} articles")
-    print("adding data to weaviate")
-    add_data(client, data)
+    data = get_isl_wiki_articles(max_articles=1e10)  # all articles
+    # data = get_isl_wiki_articles(max_articles=10)  # for testing
+
+    # print(f"Found {len(data)} articles")
+    # print("adding data to weaviate")
+    # add_data(client, data)
 
     # wiki_wiki = wikipediaapi.Wikipedia("is")
     # max_pages = 2000
@@ -130,7 +192,4 @@ if __name__ == "__main__":
 
     # print("\n")
 
-    # search(
-    #     client,
-    #     "Frakkland",
-    # )
+    measure_search_speed(client, data)
