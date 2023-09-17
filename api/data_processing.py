@@ -132,3 +132,27 @@ async def vectorize(data):
     mean_vector = calculate_mean_vector(embeddings)
 
     return mean_vector
+
+
+def vectorize_sync(data):
+    """
+    vectorizes the text. calculates mean vector of the word embeddings. the input can be of variable length.
+
+    input: str data
+    output: mean vector of the data
+    """
+
+    if data == "":
+        raise ValueError("Data is empty, nothing to vectorize.")
+
+    # Load the stop words from file
+    stop_words = load_stop_words("./stop-words/function-words.txt")
+    tokens = preprocess(data, stop_words)
+
+    # Convert the preprocessed text into word embeddings
+    embeddings = convert_to_word_embeddings(tokens)
+
+    # Calculate the mean vector of the word embeddings
+    mean_vector = calculate_mean_vector(embeddings)
+
+    return mean_vector

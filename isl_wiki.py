@@ -50,7 +50,7 @@ def filter_files(file_path):
         return False
 
 
-def list_files_and_folders_recursively(directory_path, max_files=10):
+def list_files_and_folders_recursively(directory_path, max_files=None):
     # Check if the provided path is a directory
     if not os.path.isdir(directory_path):
         print(f"Error: '{directory_path}' is not a valid directory.")
@@ -60,7 +60,7 @@ def list_files_and_folders_recursively(directory_path, max_files=10):
     # Walk through the directory tree and list all files and folders
     print(f"Files and folders in '{directory_path}':")
     for root, dirs, files in os.walk(directory_path):
-        if len(file_paths) == max_files:
+        if max_files is not None and len(file_paths) >= max_files:
             print(f"Found {max_files} files, stopping")
             break
 
@@ -79,7 +79,7 @@ def list_files_and_folders_recursively(directory_path, max_files=10):
     return file_paths
 
 
-def get_wikipedia_articles(max_articles=10, directory_path="./is/articles/"):
+def get_wikipedia_articles(max_articles=None, directory_path="./is/articles/"):
     articles = list_files_and_folders_recursively(
         directory_path, max_files=max_articles
     )

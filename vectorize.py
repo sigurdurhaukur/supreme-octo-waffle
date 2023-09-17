@@ -1,12 +1,16 @@
 import weaviate
-import wikipediaapi
-import json
+import wikipediaapi  # for fetching random wikipedia articles
 import requests
-from isl_wiki import get_wikipedia_articles as get_isl_wiki_articles
+from isl_wiki import get_wikipedia_articles as get_isl_wiki_articles  # custom module
 import time
+from tabulate import tabulate
 
 
 def initialize_schema(client):
+    """
+    Initializes the schema of the weaviate instance
+    It will begin by deleting all classes and then creating a new one
+    """
     client.schema.delete_all()
 
     class_obj = {
@@ -34,6 +38,7 @@ def initialize_schema(client):
             {
                 "dataType": ["text[]"],
                 "description": "list of links in the article",
+                "moduleConfig": {"text2vec-transformers": {"skip": True}},
                 "name": "links",
             },
         ],
@@ -67,7 +72,7 @@ def add_data(client, data):
 
 
 def get_data(wiki_wiki):
-    """gets data from wikipedia"""
+    """gets random articles  from wikipedia"""
 
     response = requests.get("https://is.wikipedia.org/api/rest_v1/page/random/title")
     if response.status_code == 200:
@@ -86,43 +91,53 @@ def get_data(wiki_wiki):
 
 
 def search(client, query):
+    """
+    Semantic search using weaviate client
+    input: query string
+    output: the result and time it took to search
+    """
     start_time = time.time()
 
     result = (
         client.query.get("Articles", ["text", "url", "summary"])
         .with_near_text({"concepts": [query]})
-        # .with_limit(2)
+        # .with_limit(2) # limit the amount of results
         .with_additional(["certainty"])
         .do()
     )
 
     print(f"query: {query}")
 
-    # print(result)
     print("result:")
     for i in result["data"]["Get"]["Articles"]:
-        # print(i["text"])
-        # print(i)
         print(i["_additional"]["certainty"], i["text"], "\n")
-        # print(i['_additional']['certainty'], i['text'], i['url'], '\n')
 
-    return time.time() - start_time
+    return result, time.time() - start_time
 
 
 def lexical_search(client, query, data):
-    "input: Article object, with title, summary, url, links"
+    """
+    input: Article object, with title, summary, url, links
+    output: time it took to search
+    """
     start_time = time.time()
 
+    result = []
     for i in data:
         if query in i.summary:
             print(i.title)
+            result.append(i)
 
     print(f"query: {query}")
 
-    return time.time() - start_time
+    return result, time.time() - start_time
 
 
 def measure_search_speed(client, data):
+    """
+    measures the search speed of the semantic search in comparison to a linear search
+    """
+
     random_queries = [
         "Frakkland",
         "Alþingi",
@@ -140,8 +155,8 @@ def measure_search_speed(client, data):
     lexical_speeds = []
     semantic_speeds = []
     for query in random_queries:
-        lexical_speed = lexical_search(client, query, data)
-        semantic_speed = search(client, query)
+        _, lexical_speed = lexical_search(client, query, data)
+        _, semantic_speed = search(client, query)
 
         lexical_speeds.append(lexical_speed)
         semantic_speeds.append(semantic_speed)
@@ -158,38 +173,110 @@ def measure_search_speed(client, data):
     print(f"semantic search speed: {semantic_speed}")
 
 
+def check_for_common_items_in_lists(list1, list2):
+    """
+    checks for common items in two lists
+    """
+
+    common_items = []
+    for i in list1:
+        if i in list2:
+            common_items.append(i)
+
+    return len(common_items), common_items
+
+
+def measure_relevance(client, data):
+    percentage_amount = 0.1
+    queries = [data[i].title for i in range(int(len(data) * percentage_amount))]
+    print(f"measuring relevance for {len(queries)} articles")
+    print("example queries: ", queries[:5])
+
+    table = [
+        ["query", "ground truth", "semantic search", "common articles", "common links"]
+    ]
+
+    for query in queries:
+        try:
+            ground_truth = []
+            semantic_results = []
+
+            ground_truth_links = []
+            semantic_results_links = []
+            # linear search
+            for i in data:
+                query = query.lower()
+                if query in i.summary:
+                    ground_truth.append(i.title.lower())
+                    ground_truth_links += i.links
+
+            # semantic search
+            result = (
+                client.query.get("Articles", ["text links"])
+                .with_near_text({"concepts": [query]})
+                .with_limit(10)
+                .do()
+            )
+
+            print("semantic search results: ", result)
+
+            semantic_results.append(
+                [i["text"] for i in result["data"]["Get"]["Articles"]]
+            )
+            semantic_results_links += [
+                i["links"] for i in result["data"]["Get"]["Articles"]
+            ]
+
+            semantic_results = semantic_results[0]
+            semantic_results_links = semantic_results_links[0]
+
+            common_items_amount, _ = check_for_common_items_in_lists(
+                ground_truth, semantic_results
+            )
+
+            common_links_amount, _ = check_for_common_items_in_lists(
+                ground_truth_links, semantic_results_links
+            )
+
+            table.append(
+                [
+                    query,
+                    len(ground_truth),
+                    len(semantic_results),
+                    common_items_amount,
+                    common_links_amount,
+                ]
+            )
+        except Exception as e:
+            print(e)
+            pass
+
+    print()
+    print(tabulate(table, headers="firstrow"))
+
+
 if __name__ == "__main__":
     # Create a client for your Weaviate instance
     client = weaviate.Client("http://localhost:8080")
-    # initialize_schema(client)
+    initialize_schema(client)
 
     data = get_isl_wiki_articles(max_articles=1e10)  # all articles
-    # data = get_isl_wiki_articles(max_articles=10)  # for testing
+    # data = get_isl_wiki_articles(max_articles=100)  # for testing
 
-    # print(f"Found {len(data)} articles")
-    # print("adding data to weaviate")
-    # add_data(client, data)
+    print(f"Found {len(data)} articles")
+    print("adding data to weaviate")
+    add_data(client, data)
 
-    # wiki_wiki = wikipediaapi.Wikipedia("is")
-    # max_pages = 2000
-    # data = []
-    # for i in range(max_pages):
-    #     print(f"getting page {i}")
-    #     new_page = get_data(wiki_wiki)
-    #     if new_page["title"] not in [page["title"] for page in data]:
-    #         data.append(new_page)
-    #     else:
-    #         print(f"Skipping page {i} with duplicate title: {new_page['title']}")
+    print("measuring search relevance")
+    measure_relevance(client, data)
 
-    # print(f"Fetched {len(data)} unique pages")
+    # example search
+    search(
+        client,
+        "þekktur fyrir viðskiptaumsvif sín og stuðning sinn við ýmsa pólitíska málstaði. Moon var stofnandi og andlegur leiðtogi Sameiningarkirkjunnar, kristins söfnuðar sem gekk út á þá trúarkenningu að Moon sjálfur væri nýr Messías sem hefði verið falið að ljúka hjálpræðisverkinu sem Jesú mistókst að vinna fyrir 2000 árum. Fylgismenn Moons eru gjarnan kallaðir „Moonistar“ ",
+    )
 
-    # print(data)
-    # # get_data(client)
-    # search(
-    #     client,
-    #     "þekktur fyrir viðskiptaumsvif sín og stuðning sinn við ýmsa pólitíska málstaði. Moon var stofnandi og andlegur leiðtogi Sameiningarkirkjunnar, kristins söfnuðar sem gekk út á þá trúarkenningu að Moon sjálfur væri nýr Messías sem hefði verið falið að ljúka hjálpræðisverkinu sem Jesú mistókst að vinna fyrir 2000 árum. Fylgismenn Moons eru gjarnan kallaðir „Moonistar“ ",
-    # )
+    print("\n")
 
-    # print("\n")
-
+    print("measuring search speed")
     measure_search_speed(client, data)

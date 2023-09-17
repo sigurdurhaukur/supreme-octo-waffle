@@ -25,32 +25,33 @@ async def meta():
 
 
 # using ISL-TSDAE
-@app.post("/vectors")
-async def read_item(request: Request, response: Response):
-    try:
-        data = await request.json()
-        text = data["text"]
-
-        vector = medium_model.encode([text])
-        vector = vector[0]
-        return {"text": text, "vector": vector.tolist(), "dim": len(vector)}
-        # return {"text": text, "vector": vector.tolist(), "dim": vector.shape[-1]}
-    except Exception as e:
-        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        return {"error": str(e)}
-
-
-# using word2vec
 # @app.post("/vectors")
 # async def read_item(request: Request, response: Response):
 #     try:
 #         data = await request.json()
 #         text = data["text"]
-#         vector = await vectorize(text)
+
+#         vector = medium_model.encode([text])
 #         vector = vector[0]
-#         print(vector.shape, vector[:5])
 #         return {"text": text, "vector": vector.tolist(), "dim": len(vector)}
 #         # return {"text": text, "vector": vector.tolist(), "dim": vector.shape[-1]}
 #     except Exception as e:
 #         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 #         return {"error": str(e)}
+
+
+# using word2vec
+@app.post("/vectors")
+async def read_item(request: Request, response: Response):
+    try:
+        data = await request.json()
+        text = data["text"]
+        vector = await vectorize(text)
+        vector = vector[0]
+        print(vector.shape, vector[:5])
+        return {"text": text, "vector": vector.tolist(), "dim": len(vector)}
+        # return {"text": text, "vector": vector.tolist(), "dim": vector.shape[-1]}
+    except Exception as e:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        print(e)
+        return {"error": str(e)}
