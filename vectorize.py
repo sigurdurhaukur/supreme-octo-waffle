@@ -4,6 +4,7 @@ import requests
 from isl_wiki import get_wikipedia_articles as get_isl_wiki_articles  # custom module
 import time
 from tabulate import tabulate
+import json
 
 
 def initialize_schema(client):
@@ -258,25 +259,50 @@ def measure_relevance(client, data):
 if __name__ == "__main__":
     # Create a client for your Weaviate instance
     client = weaviate.Client("http://localhost:8080")
-    initialize_schema(client)
+    # initialize_schema(client)
 
-    data = get_isl_wiki_articles(max_articles=1e10)  # all articles
+    # data = get_isl_wiki_articles(max_articles=1e10)  # all articles
     # data = get_isl_wiki_articles(max_articles=100)  # for testing
 
-    print(f"Found {len(data)} articles")
-    print("adding data to weaviate")
-    add_data(client, data)
+    # print(f"Found {len(data)} articles")
+    # print("adding data to weaviate")
+    # add_data(client, data)
 
-    print("measuring search relevance")
-    measure_relevance(client, data)
+    # print("measuring search relevance")
+    # measure_relevance(client, data)
 
     # example search
-    search(
-        client,
-        "þekktur fyrir viðskiptaumsvif sín og stuðning sinn við ýmsa pólitíska málstaði. Moon var stofnandi og andlegur leiðtogi Sameiningarkirkjunnar, kristins söfnuðar sem gekk út á þá trúarkenningu að Moon sjálfur væri nýr Messías sem hefði verið falið að ljúka hjálpræðisverkinu sem Jesú mistókst að vinna fyrir 2000 árum. Fylgismenn Moons eru gjarnan kallaðir „Moonistar“ ",
+    # search(
+    #     client,
+    #     "franskur listamaður",
+    # )
+
+    # lexical_search
+    # result, _ = lexical_search(
+    #     client,
+    #     data,
+    #     "franskur listamaður",
+    # )
+    # print(result)
+
+    response = (
+        client.query.get("Articles", ["text", "url", "summary"]).with_where(
+            {
+                "path": ["summary"],
+                "operator": "Like",
+                "valueText": "franskur listamaður",
+            }
+        )
+        # .with_limit(3)
+        .do()
     )
 
-    print("\n")
+    # print(response)
 
-    print("measuring search speed")
-    measure_search_speed(client, data)
+    for i in response["data"]["Get"]["Articles"]:
+        print(i["text"], "\n")
+
+    # print("\n")
+
+    # print("measuring search speed")
+    # measure_search_speed(client, data)
